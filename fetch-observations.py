@@ -42,7 +42,7 @@ def requestData(url) :
 conn = psycopg2.connect("host=localhost dbname=artsdata user=postgres password=postgres")
 cur = conn.cursor()
 
-names = ['Vanellus vanellus', 'Emberiza citrinella', 'Saxicola rubetra']
+names = ['Bombus lapidarius', 'Emberiza citrinella', 'Saxicola rubetra']
 
 for name in names :
     url = 'https://artsdatabanken.no/Api/Taxon/ScientificName?ScientificName='
@@ -83,8 +83,8 @@ for name in names :
                 j += 1
         i += 1
     try :
-        sql = 'insert into species (id, taxonid, artsdatabanken_url, lastsightings_url, categories) values (%s, %s, %s, %s, %s)'
-        cur.execute(sql, (scientific_id, taxon_id,artsdatabanken_url,lastsightings_url, str(categorydict)))
+        sql = 'insert into species (id, speciesname, taxonid, artsdatabanken_url, lastsightings_url, categories) values (%s, %s, %s, %s, %s, %s)'
+        cur.execute(sql, (scientific_id, scientific_name, taxon_id,artsdatabanken_url,lastsightings_url, str(categorydict)))
         conn.commit()
     except Exception as e :
         print(e)
@@ -116,40 +116,41 @@ for name in names :
     print('\nIterating over pages...')
     i = 0
     for page in range(totalpages) :
-        if page > 0 : 
-            url = 'https://artskart.artsdatabanken.no/publicapi/api/observations/list?FromDate=' + date + '&ScientificNameIds=' + str(scientific_id) + '&PageSize=' + str(pagesize) + '&PageIndex=' + str(page)
-            observations = requestData(url)['Observations']
+        # if totalpages == 1 or page > 0 :
+        url = 'https://artskart.artsdatabanken.no/publicapi/api/observations/list?FromDate=' + date + '&ScientificNameIds=' + str(scientific_id) + '&PageSize=' + str(pagesize) + '&PageIndex=' + str(page)
+        observations = requestData(url)['Observations']
 
-            for observation in observations :
-                id_observ = observation['CatalogNumber']
-                institution = observation['Institution']
-                collector = observation['Collector']
-                collected_date = observation['CollectedDate']
-                identifier = observation['IdentifiedBy']
-                identified_date = observation['DatetimeIdentified']
-                basisofrecord = observation['BasisOfRecord']
-                name = observation['Name']
-                count = observation['Count']
-                notes = observation['Notes']
-                observation_url = observation['DetailUrl']
-                
-                wkt = observation['FootprintWKT']
-                proj = observation['Projection']
-                if len(observation['ThumbImgUrls']) != 0 : 
-                    imageurl = observation['ThumbImgUrls'][0]['ImageUrl']
-                else :
-                    imageurl = None
-        
-                try :
-                    sql = 'insert into observations(catelog_id, scientific_id, speciesname, count, notes, institution, collector, collected_date, identifier, identified_date, basisofrecord, observation_url, image_url, geom) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, ST_SetSRID(ST_GeomFromText(%s), %s))'
-                    cur.execute(sql, (id_observ, scientific_id, name, count, notes, institution, collector, collected_date, identifier, identified_date, basisofrecord, observation_url, imageurl, wkt, proj ))
-                    conn.commit()
-                    i += 1
-                except Exception as e :
-                    conn.rollback()
-            print('%s observations inserted' % i)
-            print('fetching next page...')
-
+        for observation in observations :
+            id_observ = observation['CatalogNumber']
+            institution = observation['Institution']
+            collector = observation['Collector']
+            collected_date = observation['CollectedDate']
+            identifier = observation['IdentifiedBy']
+            identified_date = observation['DatetimeIdentified']
+            basisofrecord = observation['BasisOfRecord']
+            name = observation['Name']
+            count = observation['Count']
+            precision = observation['Precision']
+            notes = observation['Notes']
+            observation_url = observation['DetailUrl']
+            
+            wkt = observation['FootprintWKT']
+            proj = observation['Projection']
+            if len(observation['ThumbImgUrls']) != 0 : 
+                imageurl = observation['ThumbImgUrls'][0]['ImageUrl']
+            else :
+                imageurl = None
+    
+            try :
+                sql = 'insert into observations (catelog_id, scientific_id, speciesname, count, precision, notes, institution, collector, collected_date, identifier, identified_date, basisofrecord, observation_url, image_url, geom) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, ST_SetSRID(ST_GeomFromText(%s), %s))'
+                cur.execute(sql, (id_observ, scientific_id, name, count, precision, notes, institution, collector, collected_date, identifier, identified_date, basisofrecord, observation_url, imageurl, wkt, proj ))
+                conn.commit()
+                i += 1
+            except Exception as e :
+                conn.rollback()
+        print('%s observations inserted' % i)
+            
+    print('Finished iterating')
             
 
  
