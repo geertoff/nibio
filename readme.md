@@ -1,4 +1,4 @@
-It is possible to retrieve data of the Artsdatabanken. Information is included in [this webpage][https://www.artsdatabanken.no/hentdatafraartsdatabanken]
+It is possible to retrieve data of the Artsdatabanken. Information is included in [this webpage](https://www.artsdatabanken.no/hentdatafraartsdatabanken)
 
 They have five different data sources from the website:
 
