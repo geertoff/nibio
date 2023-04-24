@@ -38,14 +38,11 @@ def requestData(url) :
     else :
             print('request failed with error: %s' % str(req.status_code))
 
-
-
+# connection db
+conn = psycopg2.connect("host=localhost dbname=artsdata user=postgres password=postgres")
+cur = conn.cursor()
 
 names = ['Vanellus vanellus', 'Emberiza citrinella', 'Saxicola rubetra']
-
-
-
-url_taxon_id = '/Api/Taxon/'
 
 for name in names :
     url = 'https://artsdatabanken.no/Api/Taxon/ScientificName?ScientificName='
@@ -85,6 +82,13 @@ for name in names :
                     categorydict[category] = year
                 j += 1
         i += 1
+    try :
+        sql = 'insert into species (id, taxonid, artsdatabanken_url, lastsightings_url, categories) values (%s, %s, %s, %s, %s)'
+        cur.execute(sql, (scientific_id, taxon_id,artsdatabanken_url,lastsightings_url, str(categorydict)))
+        conn.commit()
+    except Exception as e :
+        print(e)
+        conn.rollback()
 
     """
     Using the following API call: 
@@ -97,7 +101,7 @@ for name in names :
     """
 
     # set pagesize to 1000 records. Each response will ask 1000 observations 
-    pagesize = 100
+    pagesize = 10000
     # set the date to which date should be fetched
     date = '01.01.2020'
 
@@ -108,10 +112,44 @@ for name in names :
     totalpages = feature['TotalPages']
     totalcount = feature['TotalCount']
     
-    print('Requesting data for: \nspecies: %s\nFromdate: %s\nTotalpages: %d\nTotalObservations: %d' % (scientific_name, date, totalpages, totalcount))
-    print('Iterating over pages...')
+    print('Requesting data for: \nSpecies: %s\nFromdate: %s\nTotalpages: %d\nTotalObservations: %d' % (scientific_name, date, totalpages, totalcount))
+    print('\nIterating over pages...')
+    i = 0
     for page in range(totalpages) :
-        print(page)
+        if page > 0 : 
+            url = 'https://artskart.artsdatabanken.no/publicapi/api/observations/list?FromDate=' + date + '&ScientificNameIds=' + str(scientific_id) + '&PageSize=' + str(pagesize) + '&PageIndex=' + str(page)
+            observations = requestData(url)['Observations']
 
+            for observation in observations :
+                id_observ = observation['CatalogNumber']
+                institution = observation['Institution']
+                collector = observation['Collector']
+                collected_date = observation['CollectedDate']
+                identifier = observation['IdentifiedBy']
+                identified_date = observation['DatetimeIdentified']
+                basisofrecord = observation['BasisOfRecord']
+                name = observation['Name']
+                count = observation['Count']
+                notes = observation['Notes']
+                observation_url = observation['DetailUrl']
+                
+                wkt = observation['FootprintWKT']
+                proj = observation['Projection']
+                if len(observation['ThumbImgUrls']) != 0 : 
+                    imageurl = observation['ThumbImgUrls'][0]['ImageUrl']
+                else :
+                    imageurl = None
+        
+                try :
+                    sql = 'insert into observations(catelog_id, scientific_id, speciesname, count, notes, institution, collector, collected_date, identifier, identified_date, basisofrecord, observation_url, image_url, geom) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, ST_SetSRID(ST_GeomFromText(%s), %s))'
+                    cur.execute(sql, (id_observ, scientific_id, name, count, notes, institution, collector, collected_date, identifier, identified_date, basisofrecord, observation_url, imageurl, wkt, proj ))
+                    conn.commit()
+                    i += 1
+                except Exception as e :
+                    conn.rollback()
+            print('%s observations inserted' % i)
+            print('fetching next page...')
+
+            
 
  
