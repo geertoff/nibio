@@ -29,6 +29,7 @@ create table observations (
 
 );
 
+-- example view for single species
 create view v_buskskvett as 
 select
 	o.id,
