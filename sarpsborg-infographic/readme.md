@@ -42,7 +42,8 @@ The resulting tables are combined and filtered by `naringsgruppe = 'X'` (housing
 
 The geometry of the buildings have been send by NIBIO. These shapes are also added to the database using `ogr2ogr`. 
 ```
-$ ogr2ogr -f PostgreSQL PG:"dbname='geonorge' host='localhost' port='5432' user='postgres' password='postgres'" -lco SCHEMA=nibio \ clip.shp -nln 'clipped_buildings' -nlt PROMOTE_TO_MULTI -lco PRECISION=no
+$ ogr2ogr -f PostgreSQL PG:"dbname='geonorge' host='localhost' port='5432' user='postgres' password='postgres'" -lco SCHEMA=nibio \
+clip.shp -nln 'clipped_buildings' -nlt PROMOTE_TO_MULTI -lco PRECISION=no
 ``` 
 
 Using PostGIS the bygning (points) are spatially joined with the buildings (polygons) with `ST_CONTAINS`. In [this spreadsheet](https://docs.google.com/spreadsheets/d/1HYZaOXhNnD-EmKDzhgBM7aYWnulwUnf-5vBIyKuBD68/edit?usp=sharing) it is calculated how many households could be fed by this one agricultural field. I want to select the closest buildings that could be fed by the field. To achieve that, I used the `ST_DISTANCE` function and limited the amount of rows based on the results of the spreadsheet. 
@@ -55,4 +56,6 @@ The spreadsheet uses the following sources:
 - [How many loafs of bread grow on a square meter](https://jordvern.no/1-kvadratmeter-1-brod/)
 
 The resulting map is exported from QGIS to PDF and further edited in Adobe Illustrator and Photoshop, resulting in the infographic below.
+<br>
+
 ![image of the Infographic](./influence_of_one_agricultural_field.jpg)
