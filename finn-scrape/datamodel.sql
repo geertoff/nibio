@@ -1,9 +1,11 @@
 create table listing (
-    finn_id integer primary key,
+    finn_id varchar primary key,
     title varchar,
     date varchar, 
     type varchar,
-    address varchar,
+    finnaddress varchar,
+    osmaddress varchar,
+    parseaddress jsonb,
     ownershiptype varchar,
     construction_year varchar,
     -- area integers
