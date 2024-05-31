@@ -66,27 +66,31 @@ select * from v_bygning_bolig vbb;
    use the centroid of the agricultural field and calculate the distance between a household and the field
    the limit depends on the amount of households that can be 'fet'
 */
-select 
-			row_number() over ()  objectid, 
-			st_distance(vb.geom, st_centroid(f.geom)) as dist,
-			vb.geom,
-			bn.geom
-from 		field f, v_bygning_bolig vb
-join 		buildings_nibio bn on ST_Contains(bn.geom, vb.geom)			
-order by 	vb.geom <->  st_centroid(f.geom)
--- count of amount of households
-limit 6623;
 
--- creating a convex hull for the points
-select 
-	st_convexhull(st_collect(qry.geom))
-from (
-select 
-		--	st_distance(vb.geom, st_centroid(f.geom)) as dist,
-			vb.geom as geom
-			from field f, v_bygning_bolig vb
+create or replace function __distance_households(limit_count int) 
+returns table (
+	 objectid bigint,
+	 dist double precision,
+	 geom geometry
+) 
+as
+$$
+BEGIN
+	return query
+	select 
+				row_number() over ()  objectid, 
+				st_distance(vb.geom_25833, st_centroid(f.geom)) as dist,
+				vb.geom as geom
+	from 
+		field f, v_bygning_bolig vb
+	order by 
+		vb.geom_25833 <->  st_centroid(f.geom)
+	-- count of amount of households
+	limit 
+		limit_count;
+end;
+$$
+language plpgsql;
 
-order by vb.geom <->  st_centroid(f.geom)
--- count of amount of households
-limit 6623
-) qry;
+-- create convex hull of points per vegetable-scenario
+select st_convexhull(st_collect(h.geom)) from __distance_households(2854) as h;
