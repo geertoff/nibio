@@ -119,14 +119,6 @@ def fetchMetadata(soup) :
     status_date = metatable.findNext('td').text
     return finn_id, status_date
 
-
-# extract the number of a string with the format '[number] m2'
-def extractAreaInt(area) :
-    # split the string on a whitespace and pick the first item and convert it into an integer
-    area = int(re.split('\s', area)[0])
-    return area
-
-
 # geocode address
 def geocodeAddresses(address, address_parser) : 
     address = address_parser(address, with_prob=True).to_dict()
