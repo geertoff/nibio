@@ -45,7 +45,7 @@ def fetchAvailableKeys(listing_urls) :
 # fetch section of key info. This informtion is located in 'data-testid' divs. 
 def findKeyInfo(soup) :
     # defining local variables  
-    usable_area, gross_area, ownership_type, area, construction_year, plot_area = [None] * 6
+    areal, etasje, overtakelse, bruttoareal, tomt, byggear, renovert_ar, bruksareal, tomteareal, kontorplasser, energimerking, balkong_terasse, parking = [None] * 13
     # regex pattern for extracting values
     
     keyinfodivs = soup.find('section', {'aria-labelledby':'keyinfo-heading'}).find_all('div')
@@ -58,19 +58,34 @@ def findKeyInfo(soup) :
             # if there is not a 'dt' class in the div the match-case should be skipped
             if len(attr) > 0 :
                 match attr :
-                    case 'Bruksareal' :
-                        usable_area = extractAreaInt(div.find('dd').text)
-                    case 'Bruttoareal' :
-                        gross_area = extractAreaInt(div.find('dd').text)
-                    case 'Eieform' :
-                        ownership_type = div.find('dd').text
                     case 'Areal' :
-                        area = extractAreaInt(div.find('dd').text)
-                    case 'Byggeår' :
-                        construction_year = div.find('dd').text
-                    case 'Tomteareal' :
-                        plot_area = extractAreaInt(div.find('dd').text) 
-    return usable_area, gross_area, ownership_type, area, construction_year, plot_area
+                        areal = div.find('dd').text
+                    case 'Etasje' :
+                        etasje = div.find('dd').text
+                    case 'Overtakelse' :
+                        overtakelse = div.find('dd').text
+                    case 'Bruttoareal' :
+                        bruttoareal = div.find('dd').text
+                    case 'Tomt' :
+                        tomt = div.find('dd').text
+                    case 'Byggeår' : 
+                        byggear = div.find('dd').text
+                    case 'Renovert år' :
+                        renovert_ar = div.find('dd').text
+                    case 'Bruksareal' :
+                        bruksareal = div.find('dd').text
+                    case 'Tomteareal' : 
+                        tomteareal = div.find('dd').text
+                    case 'Kontorplasser' : 
+                        kontorplasser = div.find('dd').text 
+                    case 'Energimerking' :
+                        energimerking = div.find('dd').text
+                    case 'Balkong/Terrasse' :
+                        balkong_terasse = div.find('dd').text
+                    case 'P-plasser' :
+                        parking = div.find('dd').text
+             
+    return areal, etasje, overtakelse, bruttoareal, tomt, byggear, renovert_ar, bruksareal, tomteareal, kontorplasser, energimerking, balkong_terasse, parking
     
 def fetchRealEstateInfo(soup) :
     companyprofile = soup.find('company-profile-podlet').find('div')
