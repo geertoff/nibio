@@ -43,7 +43,7 @@ def fetchAvailableKeys(listing_urls) :
     print(keyinfo)
 
 # fetch section of key info. This informtion is located in 'data-testid' divs. 
-def findKeyInfo(soup) :
+def fetchKeyInfo(soup) :
     # defining local variables  
     areal, etasje, overtakelse, bruttoareal, tomt, byggear, renovert_ar, bruksareal, tomteareal, kontorplasser, energimerking, balkong_terasse, parking = [None] * 13
     # regex pattern for extracting values
