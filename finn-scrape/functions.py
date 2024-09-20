@@ -87,6 +87,26 @@ def findKeyInfo(soup) :
              
     return areal, etasje, overtakelse, bruttoareal, tomt, byggear, renovert_ar, bruksareal, tomteareal, kontorplasser, energimerking, balkong_terasse, parking
     
+def fetchCadastreInfo(soup) :
+    kommune, gardsnr, bruksnr = [None] * 3
+    try :
+        cadastredivs = soup.find('section', {'data-testid': 'cadastre-info'}).find_all('div')
+        i = 0
+        for div in cadastredivs :
+            # skip the first div in the section
+            if i > 0 :
+                match div.text :
+                    case s if s.startswith('Kommunenr:') :
+                        kommune = re.findall('[0-9]+', div.text)[0]
+                    case s if s.startswith('Gårdsnr:') :
+                        gardsnr = re.findall('[0-9]+', div.text )[0]
+                    case s if s.startswith('Bruksnr:') :
+                        bruksnr = re.findall('[0-9]+', div.text )[0]
+            i += 1
+    except Exception as e : 
+        e
+    return kommune, gardsnr, bruksnr
+
 def fetchRealEstateInfo(soup) :
     companyprofile = soup.find('company-profile-podlet').find('div')
     name = str(companyprofile.find('h2').text)

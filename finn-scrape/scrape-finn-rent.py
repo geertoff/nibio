@@ -40,6 +40,9 @@ for listing_url in listing_urls :
     # keyinformation
     areal, etasje, overtakelse, bruttoareal, tomt, byggear, renovert_ar, bruksareal, tomteareal, kontorplasser, energimerking, balkong_terasse, parking = f.findKeyInfo(soup)
 
+    # land registry information
+    kommune, gardsnr, bruksnr = f.fetchCadastreInfo(soup)
+        
     # fetch metadata of listing
     finn_id, status_date = f.fetchMetadata(soup)
 
