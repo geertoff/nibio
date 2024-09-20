@@ -46,6 +46,10 @@ for listing_url in listing_urls :
     # fetch metadata of listing
     finn_id, status_date = f.fetchMetadata(soup)
 
+    # realEstateAgent 
+    real_estate_agent_name, img = f.fetchRealEstateInfo(soup)
+    print(real_estate_agent_name)
+
     # location
     address = soup.find('span', {'data-testid':'object-address'}).text
     # characteres with å are not geocoded yet...

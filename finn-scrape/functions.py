@@ -108,10 +108,14 @@ def fetchCadastreInfo(soup) :
     return kommune, gardsnr, bruksnr
 
 def fetchRealEstateInfo(soup) :
-    companyprofile = soup.find('company-profile-podlet').find('div')
-    name = str(companyprofile.find('h2').text)
-    img = companyprofile.find('img')['src']
-    return name, img
+    real_estate_agent_name, img = [None] * 2
+    try : 
+        companyprofile = soup.find('company-profile-podlet').find('div')
+        real_estate_agent_name = companyprofile.find('h2').string
+        img = companyprofile.find('img')['src']
+    except Exception as e : 
+        e
+    return real_estate_agent_name, img
     
 def fetchMetadata(soup) :
     metatable = soup.find('h2', id='ad-info-heading').findNext('table').find('td', {'class':'pl-8'})
