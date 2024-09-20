@@ -1,0 +1,11 @@
+name: finn
+channels:
+  - defaults
+dependencies:
+  - python
+  - requests
+  - ipykernel
+  - bs4
+  - psycopg2
+  - gdal
+prefix: /home/geertoff/miniconda3/envs/finn
