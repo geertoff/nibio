@@ -94,3 +94,11 @@ language plpgsql;
 
 -- create convex hull of points per vegetable-scenario
 select st_convexhull(st_collect(h.geom)) from __distance_households(2854) as h;
+
+-- only show no overlap points
+select 
+p.objectid,
+p.geom
+from results.potato_carrot  p
+left join results.carrot pc  on  st_intersects(p.geom, pc.geom)
+where pc.geom is null;
