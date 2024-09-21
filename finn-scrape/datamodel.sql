@@ -40,6 +40,13 @@ create table salelisting (
     ,kommune varchar
     ,gardsnr varchar
     ,bruksnr varchar
+    -- pricing information
+    ,price varchar
+    ,totalpris varchar
+    ,omkostninger varchar
+    ,verditakst varchar
+    ,kommunale_avg varchar
+    ,formuesverdi varchar
     -- keyinformation
     ,areal varchar
     ,bruttoareal varchar
@@ -57,4 +64,4 @@ create table salelisting (
     ,img varchar
     ,listing_url varchar
 );
-)
+

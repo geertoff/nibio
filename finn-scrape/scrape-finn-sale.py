@@ -61,8 +61,8 @@ for listing_url in listing_urls :
     address = soup.find('span', {'data-testid':'object-address'}).text
 
     try :
-        sql = 'insert into salelisting (finn_id, title, date, typelisting, address, kommune, gardsnr, bruksnr, areal, bruttoareal, bruksareal, tomteareal, eieform, primaerrom, byggear, overtakelse, tomt, etasje, energimerking, realestate_name, img, listing_url) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
-        cur.execute(sql, (finn_id, title, status_date, type_listing, address, kommune, gardsnr, bruksnr, areal, bruttoareal, bruksareal, tomteareal, eieform, primaerrom, byggear, overtakelse, tomt, etasje, energimerking,real_estate_agent_name, img, listing_url))
+        sql = 'insert into salelisting (finn_id, title, date, typelisting, address, kommune, gardsnr, bruksnr, price, totalpris, omkostninger, verditakst, kommunale_avg, formuesverdi, areal, bruttoareal, bruksareal, tomteareal, eieform, primaerrom, byggear, overtakelse, tomt, etasje, energimerking, realestate_name, img, listing_url) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        cur.execute(sql, (finn_id, title, status_date, type_listing, address, kommune, gardsnr, bruksnr, price, totalpris, omkostninger, verditakst, kommunale_avg, formuesverdi, areal, bruttoareal, bruksareal, tomteareal, eieform, primaerrom, byggear, overtakelse, tomt, etasje, energimerking, real_estate_agent_name, img, listing_url))
         conn.commit()
         print(f'data inserted for {title}')
     except Exception as e : 
