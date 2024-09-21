@@ -129,6 +129,21 @@ class Sale :
                 
         return bruksareal, bruttoareal, etasje, eieform, areal, byggear, tomteareal, overtakelse, tomt, energimerking, primaerrom
 
+    def fetchAvailablePricingKeys(listing_urls) :
+        keyinfo = []
+        for url in listing_urls :
+            soup = RequestAndScrape(url)
+            pricedivs = soup.find('section', {'data-testid': 'pricing-details'}).find_all('div')
+            for div in pricedivs : 
+                if div.has_attr('data-testid') :
+                    try : 
+                        attr = div.find('dt').text
+                    except Exception as e :
+                        attr = ''
+                    if attr not in keyinfo : 
+                        keyinfo.append(attr)
+        print('Availabe pricing information:')
+        print(keyinfo)
 def fetchTypeListing(soup, kind) :
         object_type = ''
         if kind == 'rent' : 

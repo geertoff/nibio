@@ -21,6 +21,7 @@ listing_urls = f.FetchListingsURL(soup)
 
 # fetch available key information of each listing
 # f.fetchAvailableKeys(listing_urls)
+# f.Sale.fetchAvailablePricingKeys(listing_urls)
 kind = 'sale'
 for listing_url in listing_urls :
     print(listing_url)
