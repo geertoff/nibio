@@ -33,9 +33,13 @@ for listing_url in listing_urls :
     # title of listing
     title = soup.find('h1').text
 
-    price = soup.find('div', {'data-testid': 'pricing-indicative-price'}).find('span', class_ = 'font-bold').text
-    # normalise string
-    price = unicodedata.normalize('NFKD', price)        
+    try :
+        price = soup.find('div', {'data-testid': 'pricing-indicative-price'}).find('span', class_ = 'font-bold').text
+         # normalise string
+        price = unicodedata.normalize('NFKD', price)   
+    except Exception as e :
+        price = None
+        
     
     # pricing information
     totalpris, omkostninger, verditakst, kommunale_avg, formuesverdi = f.Sale.fetchPricingInfo(soup)
@@ -55,5 +59,15 @@ for listing_url in listing_urls :
     real_estate_agent_name, img = f.fetchRealEstateInfo(soup)
     
     address = soup.find('span', {'data-testid':'object-address'}).text
+
+    try :
+        sql = 'insert into salelisting (finn_id, title, date, typelisting, address, kommune, gardsnr, bruksnr, areal, bruttoareal, bruksareal, tomteareal, eieform, primaerrom, byggear, overtakelse, tomt, etasje, energimerking, realestate_name, img, listing_url) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        cur.execute(sql, (finn_id, title, status_date, type_listing, address, kommune, gardsnr, bruksnr, areal, bruttoareal, bruksareal, tomteareal, eieform, primaerrom, byggear, overtakelse, tomt, etasje, energimerking,real_estate_agent_name, img, listing_url))
+        conn.commit()
+        print(f'data inserted for {title}')
+    except Exception as e : 
+        print(e)
+        conn.rollback()
+conn.close()
 
   
