@@ -117,6 +117,18 @@ def fetchRealEstateInfo(soup) :
         e
     return real_estate_agent_name, img
     
+def fetchTypeListing(soup) :
+    types_premises = soup.find('section', {'data-testid': 'object-propertyTypes'}).find_all('div', {'class': 'py-4'})
+    types_arr = []
+    delimiter = ', '
+    # if the listing consists of multiple types
+    if len(types_premises) > 1 :
+        for type_premise in types_premises : 
+            types_arr.append(type_premise.text)
+        type_listing = delimiter.join(types_arr)
+    else :
+        type_listing = types_premises[0].text
+    return type_listing
 def fetchMetadata(soup) :
     metatable = soup.find('h2', id='ad-info-heading').findNext('table').find('td', {'class':'pl-8'})
     finn_id = metatable.text
