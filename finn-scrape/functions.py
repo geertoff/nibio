@@ -137,6 +137,7 @@ def fetchMetadata(soup) :
 
 # geocode address
 def geocodeAddresses(address, address_parser) : 
+    address, osmaddress, geometry, epsg = [None] * 4
     address = address_parser(address, with_prob=True).to_dict()
     print(address)
     if address.get('StreetNumber') is None : 
