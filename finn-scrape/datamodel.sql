@@ -2,6 +2,7 @@ create table listing (
      finn_id varchar primary key
     ,title varchar
     ,date varchar 
+    ,kind varchar
     ,typelisting varchar
     -- address
     ,finnaddress varchar
