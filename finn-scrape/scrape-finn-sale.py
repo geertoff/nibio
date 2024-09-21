@@ -3,6 +3,9 @@ import psycopg2
 from psycopg2.extras import Json
 # import local functions
 import functions as f
+# to normalise strings
+import unicodedata
+
 
 # Sarpsborg location
 sarpsborg = '?location=1.20002.20023'
@@ -30,6 +33,13 @@ for listing_url in listing_urls :
     # title of listing
     title = soup.find('h1').text
 
+    price = soup.find('div', {'data-testid': 'pricing-indicative-price'}).find('span', class_ = 'font-bold').text
+    # normalise string
+    price = unicodedata.normalize('NFKD', price)        
+    
+    # pricing information
+    totalpris, omkostninger, verditakst, kommunale_avg, formuesverdi = f.Sale.fetchPricingInfo(soup)
+
     # land registry information
     kommune, gardsnr, bruksnr = f.fetchCadastreInfo(soup)
     # type of listing
@@ -44,4 +54,6 @@ for listing_url in listing_urls :
     # realEstateAgent 
     real_estate_agent_name, img = f.fetchRealEstateInfo(soup)
     
+    address = soup.find('span', {'data-testid':'object-address'}).text
+
   

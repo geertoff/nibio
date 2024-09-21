@@ -3,6 +3,8 @@ import requests
 from bs4 import BeautifulSoup
 # Regular Expression for splitting strings
 import re
+# to normalise strings
+import unicodedata
 
 # for working with spatial data
 from osgeo import ogr, osr
@@ -144,6 +146,36 @@ class Sale :
                         keyinfo.append(attr)
         print('Availabe pricing information:')
         print(keyinfo)
+    
+    def fetchPricingInfo(soup) :
+        totalpris, omkostninger, verditakst, kommunale_avg, formuesverdi = [None] * 5 
+        pricedivs = soup.find('section', {'data-testid': 'pricing-details'}).find_all('div')
+        for div in pricedivs : 
+            if div.has_attr('data-testid') :
+                try : 
+                    attr = div.find('dt').text
+                except Exception as e :
+                    attr = ''
+                 # if there is not a 'dt' class in the div the match-case should be skipped
+                if len(attr) > 0 :
+                    match attr :
+                        case 'Totalpris' :
+                            totalpris = div.find('dd').text
+                            totalpris = unicodedata.normalize('NFKD', totalpris)
+                        case 'Omkostninger' :
+                            omkostninger = div.find('dd').text
+                            omkostninger = unicodedata.normalize('NFKD', omkostninger)
+                        case 'Verditakst' :
+                            verditakst = div.find('dd').get_text(strip = True)
+                            verditakst = unicodedata.normalize('NFKD', verditakst) 
+                        case 'Kommunale avg.' :
+                            kommunale_avg = div.find('dd').get_text(strip = True)
+                            kommunale_avg = unicodedata.normalize('NFKD', kommunale_avg) 
+                        case 'Formuesverdi' :
+                            formuesverdi = div.find('dd').get_text(strip = True)
+                            formuesverdi = unicodedata.normalize('NFKD', formuesverdi) 
+        return  totalpris, omkostninger, verditakst, kommunale_avg, formuesverdi 
+            
 def fetchTypeListing(soup, kind) :
         object_type = ''
         if kind == 'rent' : 
