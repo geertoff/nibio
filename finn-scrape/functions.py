@@ -36,57 +36,117 @@ def fetchAvailableKeys(listing_urls) :
         keyinfodivs = soup.find('section', {'aria-labelledby':'keyinfo-heading'}).find_all('div')
         for div in keyinfodivs : 
             if div.has_attr('data-testid') :
-                attr = div.find('dt').text
+                try :
+                    attr = div.find('dt').text
+                except Exception as e : 
+                    attr = ''
                 if attr not in keyinfo :
                     keyinfo.append(attr)
     print('Available keyinformation :')
     print(keyinfo)
 
-# fetch section of key info. This informtion is located in 'data-testid' divs. 
-def fetchKeyInfo(soup) :
-    # defining local variables  
-    areal, etasje, overtakelse, bruttoareal, tomt, byggear, renovert_ar, bruksareal, tomteareal, kontorplasser, energimerking, balkong_terasse, parking = [None] * 13
-    # regex pattern for extracting values
-    
-    keyinfodivs = soup.find('section', {'aria-labelledby':'keyinfo-heading'}).find_all('div')
-    for div in keyinfodivs :
-        if div.has_attr('data-testid') :
-            try :
-                attr = div.find('dt').text
-            except Exception as e :
-                attr = ''
-            # if there is not a 'dt' class in the div the match-case should be skipped
-            if len(attr) > 0 :
-                match attr :
-                    case 'Areal' :
-                        areal = div.find('dd').text
-                    case 'Etasje' :
-                        etasje = div.find('dd').text
-                    case 'Overtakelse' :
-                        overtakelse = div.find('dd').text
-                    case 'Bruttoareal' :
-                        bruttoareal = div.find('dd').text
-                    case 'Tomt' :
-                        tomt = div.find('dd').text
-                    case 'Byggeår' : 
-                        byggear = div.find('dd').text
-                    case 'Renovert år' :
-                        renovert_ar = div.find('dd').text
-                    case 'Bruksareal' :
-                        bruksareal = div.find('dd').text
-                    case 'Tomteareal' : 
-                        tomteareal = div.find('dd').text
-                    case 'Kontorplasser' : 
-                        kontorplasser = div.find('dd').text 
-                    case 'Energimerking' :
-                        energimerking = div.find('dd').text
-                    case 'Balkong/Terrasse' :
-                        balkong_terasse = div.find('dd').text
-                    case 'P-plasser' :
-                        parking = div.find('dd').text
-             
-    return areal, etasje, overtakelse, bruttoareal, tomt, byggear, renovert_ar, bruksareal, tomteareal, kontorplasser, energimerking, balkong_terasse, parking
-    
+class Rent : 
+    # fetch section of key info. This informtion is located in 'data-testid' divs. 
+    def fetchKeyInfo(soup) :
+        # defining local variables  
+        areal, etasje, overtakelse, bruttoareal, tomt, byggear, renovert_ar, bruksareal, tomteareal, kontorplasser, energimerking, balkong_terasse, parking = [None] * 13
+
+        keyinfodivs = soup.find('section', {'aria-labelledby':'keyinfo-heading'}).find_all('div')
+        for div in keyinfodivs :
+            if div.has_attr('data-testid') :
+                try :
+                    attr = div.find('dt').text
+                except Exception as e :
+                    attr = ''
+                # if there is not a 'dt' class in the div the match-case should be skipped
+                if len(attr) > 0 :
+                    match attr :
+                        case 'Areal' :
+                            areal = div.find('dd').text
+                        case 'Etasje' :
+                            etasje = div.find('dd').text
+                        case 'Overtakelse' :
+                            overtakelse = div.find('dd').text
+                        case 'Bruttoareal' :
+                            bruttoareal = div.find('dd').text
+                        case 'Tomt' :
+                            tomt = div.find('dd').text
+                        case 'Byggeår' : 
+                            byggear = div.find('dd').text
+                        case 'Renovert år' :
+                            renovert_ar = div.find('dd').text
+                        case 'Bruksareal' :
+                            bruksareal = div.find('dd').text
+                        case 'Tomteareal' : 
+                            tomteareal = div.find('dd').text
+                        case 'Kontorplasser' : 
+                            kontorplasser = div.find('dd').text 
+                        case 'Energimerking' :
+                            energimerking = div.find('dd').text
+                        case 'Balkong/Terrasse' :
+                            balkong_terasse = div.find('dd').text
+                        case 'P-plasser' :
+                            parking = div.find('dd').text
+                
+        return areal, etasje, overtakelse, bruttoareal, tomt, byggear, renovert_ar, bruksareal, tomteareal, kontorplasser, energimerking, balkong_terasse, parking
+class Sale :
+    def fetchKeyInfo(soup) :
+        # defining local variables  
+        bruksareal, bruttoareal, etasje, eieform, areal, byggear, tomteareal, overtakelse, tomt, energimerking, primaerrom = [None] * 11
+
+        keyinfodivs = soup.find('section', {'aria-labelledby':'keyinfo-heading'}).find_all('div')
+        for div in keyinfodivs :
+            if div.has_attr('data-testid') :
+                try :
+                    attr = div.find('dt').text
+                except Exception as e :
+                    attr = ''
+                # if there is not a 'dt' class in the div the match-case should be skipped
+                if len(attr) > 0 :
+                    match attr :
+                        case 'Bruksareal' :
+                            bruksareal = div.find('dd').text
+                        case 'Bruttoareal' :
+                            bruttoareal = div.find('dd').text
+                        case 'Etasje' :
+                            etasje = div.find('dd').text
+                        case 'Eieform' :
+                            eieform = div.find('dd').text
+                        case 'Areal' :
+                            areal = div.find('dd').text
+                        case 'Byggeår' : 
+                            byggear = div.find('dd').text
+                        case 'Tomteareal' :
+                            tomteareal = div.find('dd').text
+                        case 'Overtakelse' :
+                            overtakelse = div.find('dd').text
+                        case 'Tomt' : 
+                            tomt = div.find('dd').text
+                        case 'Energimerking' : 
+                            energimerking = div.find('dd').text 
+                        case 'Primærrom' :
+                            primaerrom = div.find('dd').text
+                
+        return bruksareal, bruttoareal, etasje, eieform, areal, byggear, tomteareal, overtakelse, tomt, energimerking, primaerrom
+
+def fetchTypeListing(soup, kind) :
+        object_type = ''
+        if kind == 'rent' : 
+            object_type == 'object-propertyTypes' 
+        elif kind == 'sale' :
+            object_type == 'object-property-type' 
+        types_premises = soup.find('section', {'data-testid': object_type}).find_all('div', {'class': 'py-4'})
+        types_arr = []
+        delimiter = ', '
+        # if the listing consists of multiple types
+        if len(types_premises) > 1 :
+            for type_premise in types_premises : 
+                types_arr.append(type_premise.text)
+            type_listing = delimiter.join(types_arr)
+        else :
+            type_listing = types_premises[0].text
+        return type_listing
+
 def fetchCadastreInfo(soup) :
     kommune, gardsnr, bruksnr = [None] * 3
     try :
@@ -116,19 +176,7 @@ def fetchRealEstateInfo(soup) :
     except Exception as e : 
         e
     return real_estate_agent_name, img
-    
-def fetchTypeListing(soup) :
-    types_premises = soup.find('section', {'data-testid': 'object-propertyTypes'}).find_all('div', {'class': 'py-4'})
-    types_arr = []
-    delimiter = ', '
-    # if the listing consists of multiple types
-    if len(types_premises) > 1 :
-        for type_premise in types_premises : 
-            types_arr.append(type_premise.text)
-        type_listing = delimiter.join(types_arr)
-    else :
-        type_listing = types_premises[0].text
-    return type_listing
+ 
 def fetchMetadata(soup) :
     metatable = soup.find('h2', id='ad-info-heading').findNext('table').find('td', {'class':'pl-8'})
     finn_id = metatable.text
