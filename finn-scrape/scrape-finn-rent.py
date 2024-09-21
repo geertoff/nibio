@@ -56,7 +56,7 @@ for listing_url in listing_urls :
     #     parseaddress, osmaddress, geometry, proj = [None] * 4
 
     try :
-        sql = 'insert into rentlisting (finn_id, title, date, typelisting, finnaddress, kommune, gardsnr, bruksnr, areal, bruttoareal, bruksareal, tomteareal, byggear, renovert_ar, overtakelse, tomt, etasje, energimerking, kontorplasser, parking, balkong_terasse, realestate_name, img, listing_url) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        sql = 'insert into rentlisting (finn_id, title, date, typelisting, address, kommune, gardsnr, bruksnr, areal, bruttoareal, bruksareal, tomteareal, byggear, renovert_ar, overtakelse, tomt, etasje, energimerking, kontorplasser, parking, balkong_terasse, realestate_name, img, listing_url) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
         cur.execute(sql, (finn_id, title, status_date, type_listing, address, kommune, gardsnr, bruksnr, areal, bruttoareal, bruksareal, tomteareal, byggear, renovert_ar, overtakelse, tomt, etasje, energimerking, kontorplasser, parking, balkong_terasse, real_estate_agent_name, img, listing_url))
         conn.commit()
         print(f'data inserted for {title}')
