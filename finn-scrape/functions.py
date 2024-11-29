@@ -5,9 +5,12 @@ from bs4 import BeautifulSoup
 import re
 # to normalise strings
 import unicodedata
-
 # for working with spatial data
 from osgeo import ogr, osr
+import psycopg2
+from datetime import datetime
+# normalise strings
+import unicodedata
 
 def RequestAndScrape(url) :
     r = requests.get(url)
@@ -92,6 +95,58 @@ class Rent :
                 
         return areal, etasje, overtakelse, bruttoareal, tomt, byggear, renovert_ar, bruksareal, tomteareal, kontorplasser, energimerking, balkong_terasse, parking
 class Sale :
+    def scrape_finn(conn, cur, listing_urls) :
+        # create dynamic tablename 
+        current_date = datetime.now().strftime('%Y%m%d')
+        table_name = f'{current_date}_salelisting'
+        # create new table using that name
+        createDynamicTable(conn, cur, table_name, 'salelisting.sql')
+
+        for listing_url in listing_urls :
+            url = 'https://www.finn.no' + listing_url
+            soup = RequestAndScrape(url)
+
+            # title of listing
+            title = soup.find('h1').text
+
+            try :
+                price = soup.find('div', {'data-testid': 'pricing-indicative-price'}).find('span', class_ = 'font-bold').text
+                # normalise string
+                price = unicodedata.normalize('NFKD', price)   
+            except Exception as e :
+                price = None
+                
+            # pricing information
+            try :
+                totalpris, omkostninger, verditakst, kommunale_avg, formuesverdi = Sale.fetchPricingInfo(soup)
+            except Exception as e : 
+                print('No pricing information on listing')
+            # land registry information
+            kommune, gardsnr, bruksnr = fetchCadastreInfo(soup)
+            # type of listing
+            type_listing = fetchTypeListing(soup, 'sale')
+
+            # fetch metadata of listing
+            finn_id, status_date = fetchMetadata(soup)
+
+            # keyinformation
+            bruksareal, bruttoareal, etasje, eieform, areal, byggear, tomteareal, overtakelse, tomt, energimerking, primaerrom = Sale.fetchKeyInfo(soup)
+
+            # realEstateAgent 
+            real_estate_agent_name, img = fetchRealEstateInfo(soup)
+            
+            address = soup.find('span', {'data-testid':'object-address'}).text
+            current_day = datetime.today().strftime('%d-%m-%Y')
+            try :
+                sql = f'insert into "{table_name}" (finn_id, title, date_upload, date_listing, typelisting, address, kommune, gardsnr, bruksnr, price, totalpris, omkostninger, verditakst, kommunale_avg, formuesverdi, areal, bruttoareal, bruksareal, tomteareal, eieform, primaerrom, byggear, overtakelse, tomt, etasje, energimerking, realestate_name, img, listing_url) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+                cur.execute(sql, (finn_id, title, current_day, status_date, type_listing, address, kommune, gardsnr, bruksnr, price, totalpris, omkostninger, verditakst, kommunale_avg, formuesverdi, areal, bruttoareal, bruksareal, tomteareal, eieform, primaerrom, byggear, overtakelse, tomt, etasje, energimerking, real_estate_agent_name, img, listing_url))
+                conn.commit()
+                print(f'data inserted for {title}')
+            except Exception as e : 
+                print(e)
+                conn.rollback()
+        print('Finished scraping listings for sale')
+
     def fetchKeyInfo(soup) :
         # defining local variables  
         bruksareal, bruttoareal, etasje, eieform, areal, byggear, tomteareal, overtakelse, tomt, energimerking, primaerrom = [None] * 11
@@ -271,3 +326,13 @@ def geocodeAddresses(address, address_parser) :
         print('The following request failed:')
         print(r.url)
         print('With status code, ', r.status_code)
+
+def createDynamicTable(conn, cur, table_name, filename ) : 
+    # load salelisting SQL 
+    with open(filename, 'r') as file :
+        sql = file.read()
+    #replace tablename from SQL-file to dynamic table_name to create a dynamic table
+    sql = sql.replace('salelisting', f'"{table_name}"')
+    cur.execute(sql)
+    conn.commit()
+    print(f'Table {table_name} is created')
