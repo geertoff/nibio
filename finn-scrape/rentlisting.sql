@@ -1,4 +1,4 @@
-create table rentlisting (
+create table if not exists rentlisting (
      finn_id varchar primary key
     ,title varchar
     ,date_upload varchar
