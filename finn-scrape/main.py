@@ -36,7 +36,10 @@ listing_urls = f.FetchListingsURL(soup)
 # f.fetchAvailableKeys(listing_urls)
 # f.Sale.fetchAvailablePricingKeys(listing_urls)
 
+# scraping sale listings
 f.Sale.scrape_finn(conn, cur, listing_urls )
+# scraping rental listings
+f.Rent.scrape_finn(conn, cur, listing_urls)
 
 conn.close()
 

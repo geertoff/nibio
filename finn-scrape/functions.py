@@ -51,6 +51,48 @@ def fetchAvailableKeys(listing_urls) :
     print(keyinfo)
 
 class Rent : 
+    def scrape_finn(conn, cur, listing_urls) : 
+        kind = 'rentlisting'
+        # create dynamic tablename 
+        current_date = datetime.now().strftime('%Y%m%d')
+        table_name = f'{current_date}_{kind}'
+        # create new table using that name
+        createDynamicTable(conn, cur, table_name, kind)
+
+        for listing_url in listing_urls : 
+            if 'https' not in listing_url :
+                url = 'https://www.finn.no' + listing_url
+            else :
+                url = listing_url
+            soup = RequestAndScrape(url)
+            # title of listing
+            title = soup.find('h1').text
+            # keyinformation
+            areal, etasje, overtakelse, bruttoareal, tomt, byggear, renovert_ar, bruksareal, tomteareal, kontorplasser, energimerking, balkong_terasse, parking = Rent.fetchKeyInfo(soup)
+            # land registry information
+            kommune, gardsnr, bruksnr = fetchCadastreInfo(soup)
+            # type of listing
+            type_listing = fetchTypeListing(soup, 'rent')
+            # fetch metadata of listing
+            finn_id, status_date = fetchMetadata(soup)
+            # realEstateAgent 
+            real_estate_agent_name, img = fetchRealEstateInfo(soup)
+
+            # location
+            address = soup.find('span', {'data-testid':'object-address'}).text
+            current_day = datetime.today().strftime('%d-%m-%Y')
+
+            try :
+                sql = f'insert into "{table_name}" (finn_id, title, date_upload, date_listing, typelisting, address, kommune, gardsnr, bruksnr, areal, bruttoareal, bruksareal, tomteareal, byggear, renovert_ar, overtakelse, tomt, etasje, energimerking, kontorplasser, parking, balkong_terasse, realestate_name, img, listing_url) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+                cur.execute(sql, (finn_id, title, status_date, current_day, type_listing, address, kommune, gardsnr, bruksnr, areal, bruttoareal, bruksareal, tomteareal, byggear, renovert_ar, overtakelse, tomt, etasje, energimerking, kontorplasser, parking, balkong_terasse, real_estate_agent_name, img, listing_url))
+                conn.commit()
+                print(f'data inserted for {title}')
+            except Exception as e : 
+                print(e)
+                conn.rollback()
+        print('Finished scraping rental listings')
+
+
     # fetch section of key info. This informtion is located in 'data-testid' divs. 
     def fetchKeyInfo(soup) :
         # defining local variables  
@@ -96,11 +138,12 @@ class Rent :
         return areal, etasje, overtakelse, bruttoareal, tomt, byggear, renovert_ar, bruksareal, tomteareal, kontorplasser, energimerking, balkong_terasse, parking
 class Sale :
     def scrape_finn(conn, cur, listing_urls) :
+        kind = 'salelisting'
         # create dynamic tablename 
         current_date = datetime.now().strftime('%Y%m%d')
-        table_name = f'{current_date}_salelisting'
+        table_name = f'{current_date}_{kind}'
         # create new table using that name
-        createDynamicTable(conn, cur, table_name, 'salelisting.sql')
+        createDynamicTable(conn, cur, table_name, kind)
 
         for listing_url in listing_urls :
             url = 'https://www.finn.no' + listing_url
@@ -327,12 +370,12 @@ def geocodeAddresses(address, address_parser) :
         print(r.url)
         print('With status code, ', r.status_code)
 
-def createDynamicTable(conn, cur, table_name, filename ) : 
+def createDynamicTable(conn, cur, table_name, kind) : 
     # load salelisting SQL 
-    with open(filename, 'r') as file :
+    with open(f'{kind}.sql', 'r') as file :
         sql = file.read()
     #replace tablename from SQL-file to dynamic table_name to create a dynamic table
-    sql = sql.replace('salelisting', f'"{table_name}"')
+    sql = sql.replace(kind, f'"{table_name}"')
     cur.execute(sql)
     conn.commit()
     print(f'Table {table_name} is created')
