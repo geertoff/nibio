@@ -77,7 +77,7 @@ class Rent :
 
         url = 'https://www.finn.no/realestate/businessrent/search.html'
         all_listing_urls = FetchAllListingsURL(url, location)
-        print(f'{len(all_listing_urls)} listings found')
+        print(f'{len(all_listing_urls)} listings found \n')
 
         for listing_url in all_listing_urls : 
             if 'https' not in listing_url :
@@ -168,11 +168,8 @@ class Sale :
         url = 'https://www.finn.no/realestate/businesssale/search.html'
         all_listing_urls = FetchAllListingsURL(url, location)
         print(f'{len(all_listing_urls)} listings found')
-        # get HTML of main page
-        soup = RequestAndScrape(url)
-        # get URL's of the different listings pages
-        listing_urls = FetchListingsURL(soup)
-        for listing_url in listing_urls :
+    
+        for listing_url in all_listing_urls :
             url = 'https://www.finn.no' + listing_url
             soup = RequestAndScrape(url)
 
