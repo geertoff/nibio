@@ -24,14 +24,10 @@ def FetchListingsURL(soup) :
     listing_data = []
     # find the listings in articles with the following class
     listings = soup.find_all('a', {'class':'sf-search-ad-link'} )
-    i = 0
     for listing in listings : 
         # get the value of the url
         listing_url = listing['href']
         listing_data.append(listing_url)
-        i += 1
-    # count listings
-    print('%d listings available' % i)
     return listing_data
 
 def fetchAvailableKeys(listing_urls) :
@@ -49,6 +45,26 @@ def fetchAvailableKeys(listing_urls) :
                     keyinfo.append(attr)
     print('Available keyinformation :')
     print(keyinfo)
+def FetchAllListingsURL(url, location) : 
+    all_listing_urls = []        
+    j = 1
+    while True :
+        pageurl = f'{url}?location={location}&page={j}'
+        # get HTML of main page
+        soup = RequestAndScrape(pageurl)
+        # get URL's of the different listings pages
+        listing_urls = FetchListingsURL(soup)
+        # add listing urls to all_listing_urls
+        all_listing_urls.extend(listing_urls)
+
+        # if there are less than 50 listings on one page, there are no more listings available
+        if len(listing_urls) < 50 : 
+            break
+        # if there are more pages available, increase pagination
+        j += 1
+        pageurl = ''
+    return all_listing_urls
+
 
 class Rent : 
     def scrape_finn(conn, cur, location) : 
@@ -59,13 +75,11 @@ class Rent :
         # create new table using that name
         createDynamicTable(conn, cur, table_name, kind)
 
-        url = 'https://www.finn.no/realestate/businessrent/search.html' + location
-        # get HTML of main page
-        soup = RequestAndScrape(url)
-        # get URL's of the different listings pages
-        listing_urls = FetchListingsURL(soup)
+        url = 'https://www.finn.no/realestate/businessrent/search.html'
+        all_listing_urls = FetchAllListingsURL(url, location)
+        print(f'{len(all_listing_urls)} listings found')
 
-        for listing_url in listing_urls : 
+        for listing_url in all_listing_urls : 
             if 'https' not in listing_url :
                 url = 'https://www.finn.no' + listing_url
             else :
@@ -96,7 +110,7 @@ class Rent :
             except Exception as e : 
                 print(e)
                 conn.rollback()
-        print('Finished scraping rental listings')
+            print('Finished scraping rental listings')
 
 
     # fetch section of key info. This informtion is located in 'data-testid' divs. 
@@ -151,7 +165,9 @@ class Sale :
         # create new table using that name
         createDynamicTable(conn, cur, table_name, kind)
 
-        url = 'https://www.finn.no/realestate/businesssale/search.html' + location
+        url = 'https://www.finn.no/realestate/businesssale/search.html'
+        all_listing_urls = FetchAllListingsURL(url, location)
+        print(f'{len(all_listing_urls)} listings found')
         # get HTML of main page
         soup = RequestAndScrape(url)
         # get URL's of the different listings pages
