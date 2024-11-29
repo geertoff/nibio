@@ -51,13 +51,19 @@ def fetchAvailableKeys(listing_urls) :
     print(keyinfo)
 
 class Rent : 
-    def scrape_finn(conn, cur, listing_urls) : 
+    def scrape_finn(conn, cur, location) : 
         kind = 'rentlisting'
         # create dynamic tablename 
         current_date = datetime.now().strftime('%Y%m%d')
         table_name = f'{current_date}_{kind}'
         # create new table using that name
         createDynamicTable(conn, cur, table_name, kind)
+
+        url = 'https://www.finn.no/realestate/businessrent/search.html' + location
+        # get HTML of main page
+        soup = RequestAndScrape(url)
+        # get URL's of the different listings pages
+        listing_urls = FetchListingsURL(soup)
 
         for listing_url in listing_urls : 
             if 'https' not in listing_url :
@@ -137,7 +143,7 @@ class Rent :
                 
         return areal, etasje, overtakelse, bruttoareal, tomt, byggear, renovert_ar, bruksareal, tomteareal, kontorplasser, energimerking, balkong_terasse, parking
 class Sale :
-    def scrape_finn(conn, cur, listing_urls) :
+    def scrape_finn(conn, cur, location) :
         kind = 'salelisting'
         # create dynamic tablename 
         current_date = datetime.now().strftime('%Y%m%d')
@@ -145,6 +151,11 @@ class Sale :
         # create new table using that name
         createDynamicTable(conn, cur, table_name, kind)
 
+        url = 'https://www.finn.no/realestate/businesssale/search.html' + location
+        # get HTML of main page
+        soup = RequestAndScrape(url)
+        # get URL's of the different listings pages
+        listing_urls = FetchListingsURL(soup)
         for listing_url in listing_urls :
             url = 'https://www.finn.no' + listing_url
             soup = RequestAndScrape(url)

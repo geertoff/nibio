@@ -24,22 +24,17 @@ cur = conn.cursor()
 
 # Sarpsborg location
 sarpsborg = '?location=1.20002.20023'
-# fetch listings of sarpsborg
-saleurl = 'https://www.finn.no/realestate/businesssale/search.html' + sarpsborg
-
-# get HTML of main page
-soup = f.RequestAndScrape(saleurl)
-# get URL's of the different listings pages
-listing_urls = f.FetchListingsURL(soup)
 
 # fetch available key information of each listing
 # f.fetchAvailableKeys(listing_urls)
 # f.Sale.fetchAvailablePricingKeys(listing_urls)
 
 # scraping sale listings
-f.Sale.scrape_finn(conn, cur, listing_urls )
+print('Scraping listings for sale... \n')
+f.Sale.scrape_finn(conn, cur, sarpsborg )
 # scraping rental listings
-f.Rent.scrape_finn(conn, cur, listing_urls)
+print('Scraping rental listings... \n')
+f.Rent.scrape_finn(conn, cur, sarpsborg)
 
 conn.close()
 
