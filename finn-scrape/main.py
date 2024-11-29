@@ -23,7 +23,7 @@ conn = psycopg2.connect(f'host={host} dbname={db} user={user} password={pw}')
 cur = conn.cursor()
 
 # Sarpsborg location
-sarpsborg = '?location=1.20002.20023'
+location = '1.20002.20023'
 
 # fetch available key information of each listing
 # f.fetchAvailableKeys(listing_urls)
@@ -31,10 +31,10 @@ sarpsborg = '?location=1.20002.20023'
 
 # scraping sale listings
 print('Scraping listings for sale... \n')
-f.Sale.scrape_finn(conn, cur, sarpsborg )
+f.Sale.scrape_finn(conn, cur, location )
 # scraping rental listings
 print('Scraping rental listings... \n')
-f.Rent.scrape_finn(conn, cur, sarpsborg)
+f.Rent.scrape_finn(conn, cur, location)
 
 conn.close()
 
