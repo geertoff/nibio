@@ -1,7 +1,8 @@
 create table rentlisting (
      finn_id varchar primary key
     ,title varchar
-    ,date varchar 
+    ,date_upload varchar
+    ,date_listing varchar 
     ,typelisting varchar
     -- address
     ,address varchar
@@ -32,7 +33,8 @@ create table rentlisting (
 create table salelisting (
      finn_id varchar primary key
     ,title varchar
-    ,date varchar 
+    ,date_upload varchar
+    ,date_listing varchar 
     ,typelisting varchar
     -- address
     ,address varchar

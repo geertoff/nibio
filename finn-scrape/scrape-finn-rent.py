@@ -3,15 +3,29 @@ import psycopg2
 from psycopg2.extras import Json
 # import local functions
 import functions as f
+from datetime import datetime
+# for loading environment variables
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+host = os.getenv('PGHOST')
+port = os.getenv('PGPORT')
+user = os.getenv('PGUSER')
+pw = os.getenv('PGPASSWORD')
+db = os.getenv('PGDATABASE')
+
+# open PostgreSQL connection
+conn = psycopg2.connect(f'host={host} dbname={db} user={user} password={pw}')
+cur = conn.cursor()
+
+current_day = datetime.today().strftime('%d-%m-%Y')
 # parse addresses
 # from deepparse.parser import AddressParser
 
 # Sarpsborg location
 sarpsborg = '?location=1.20002.20023'
-
-# open PostgreSQL connection
-conn = psycopg2.connect("host=localhost dbname=finn user=postgres password=postgres")
-cur = conn.cursor()
 
 # create address parser object
 # address_parser = AddressParser(model_type='bpemb', device=0)
@@ -31,8 +45,11 @@ The fetchAvailableKeys function can be used to check if the available keyinforma
 
 kind = 'rent'
 for listing_url in listing_urls : 
-    print(listing_url)
-    soup = f.RequestAndScrape(listing_url)
+    if 'https' not in listing_url :
+        url = 'https://www.finn.no' + listing_url
+    else :
+        url = listing_url
+    soup = f.RequestAndScrape(url)
     # title of listing
     title = soup.find('h1').text
     # keyinformation
@@ -56,8 +73,8 @@ for listing_url in listing_urls :
     #     parseaddress, osmaddress, geometry, proj = [None] * 4
 
     try :
-        sql = 'insert into rentlisting (finn_id, title, date, typelisting, address, kommune, gardsnr, bruksnr, areal, bruttoareal, bruksareal, tomteareal, byggear, renovert_ar, overtakelse, tomt, etasje, energimerking, kontorplasser, parking, balkong_terasse, realestate_name, img, listing_url) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
-        cur.execute(sql, (finn_id, title, status_date, type_listing, address, kommune, gardsnr, bruksnr, areal, bruttoareal, bruksareal, tomteareal, byggear, renovert_ar, overtakelse, tomt, etasje, energimerking, kontorplasser, parking, balkong_terasse, real_estate_agent_name, img, listing_url))
+        sql = 'insert into rentlisting (finn_id, title, date_upload, date_listing, typelisting, address, kommune, gardsnr, bruksnr, areal, bruttoareal, bruksareal, tomteareal, byggear, renovert_ar, overtakelse, tomt, etasje, energimerking, kontorplasser, parking, balkong_terasse, realestate_name, img, listing_url) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        cur.execute(sql, (finn_id, title, status_date, current_day, type_listing, address, kommune, gardsnr, bruksnr, areal, bruttoareal, bruksareal, tomteareal, byggear, renovert_ar, overtakelse, tomt, etasje, energimerking, kontorplasser, parking, balkong_terasse, real_estate_agent_name, img, listing_url))
         conn.commit()
         print(f'data inserted for {title}')
     except Exception as e : 

@@ -5,14 +5,28 @@ from psycopg2.extras import Json
 import functions as f
 # to normalise strings
 import unicodedata
+from datetime import datetime
+# for loading environment variables
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
+
+host = os.getenv('PGHOST')
+port = os.getenv('PGPORT')
+user = os.getenv('PGUSER')
+pw = os.getenv('PGPASSWORD')
+db = os.getenv('PGDATABASE')
+
+# open PostgreSQL connection
+conn = psycopg2.connect(f'host={host} dbname={db} user={user} password={pw}')
+cur = conn.cursor()
+
+current_day = datetime.today().strftime('%d-%m-%Y')
 
 # Sarpsborg location
 sarpsborg = '?location=1.20002.20023'
 
-# open PostgreSQL connection
-conn = psycopg2.connect("host=localhost dbname=finn user=postgres password=postgres")
-cur = conn.cursor()
 
 # fetch listings of sarpsborg
 saleurl = 'https://www.finn.no/realestate/businesssale/search.html' + sarpsborg
@@ -27,8 +41,8 @@ listing_urls = f.FetchListingsURL(soup)
 # f.Sale.fetchAvailablePricingKeys(listing_urls)
 kind = 'sale'
 for listing_url in listing_urls :
-    print(listing_url)
-    soup = f.RequestAndScrape(listing_url)
+    url = 'https://www.finn.no' + listing_url
+    soup = f.RequestAndScrape(url)
 
     # title of listing
     title = soup.find('h1').text
@@ -40,10 +54,11 @@ for listing_url in listing_urls :
     except Exception as e :
         price = None
         
-    
     # pricing information
-    totalpris, omkostninger, verditakst, kommunale_avg, formuesverdi = f.Sale.fetchPricingInfo(soup)
-
+    try :
+        totalpris, omkostninger, verditakst, kommunale_avg, formuesverdi = f.Sale.fetchPricingInfo(soup)
+    except Exception as e : 
+        print('No pricing information on listing')
     # land registry information
     kommune, gardsnr, bruksnr = f.fetchCadastreInfo(soup)
     # type of listing
@@ -61,8 +76,8 @@ for listing_url in listing_urls :
     address = soup.find('span', {'data-testid':'object-address'}).text
 
     try :
-        sql = 'insert into salelisting (finn_id, title, date, typelisting, address, kommune, gardsnr, bruksnr, price, totalpris, omkostninger, verditakst, kommunale_avg, formuesverdi, areal, bruttoareal, bruksareal, tomteareal, eieform, primaerrom, byggear, overtakelse, tomt, etasje, energimerking, realestate_name, img, listing_url) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
-        cur.execute(sql, (finn_id, title, status_date, type_listing, address, kommune, gardsnr, bruksnr, price, totalpris, omkostninger, verditakst, kommunale_avg, formuesverdi, areal, bruttoareal, bruksareal, tomteareal, eieform, primaerrom, byggear, overtakelse, tomt, etasje, energimerking, real_estate_agent_name, img, listing_url))
+        sql = 'insert into salelisting (finn_id, title, date_upload, date_listing, typelisting, address, kommune, gardsnr, bruksnr, price, totalpris, omkostninger, verditakst, kommunale_avg, formuesverdi, areal, bruttoareal, bruksareal, tomteareal, eieform, primaerrom, byggear, overtakelse, tomt, etasje, energimerking, realestate_name, img, listing_url) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        cur.execute(sql, (finn_id, title, current_day, status_date, type_listing, address, kommune, gardsnr, bruksnr, price, totalpris, omkostninger, verditakst, kommunale_avg, formuesverdi, areal, bruttoareal, bruksareal, tomteareal, eieform, primaerrom, byggear, overtakelse, tomt, etasje, energimerking, real_estate_agent_name, img, listing_url))
         conn.commit()
         print(f'data inserted for {title}')
     except Exception as e : 
