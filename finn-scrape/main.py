@@ -22,8 +22,8 @@ db = os.getenv('PGDATABASE')
 conn = psycopg2.connect(f'host={host} dbname={db} user={user} password={pw}')
 cur = conn.cursor()
 
-# Sarpsborg location
-location = '1.20002.20023'
+# Østfold  location
+location = '0.20002'
 
 # fetch available key information of each listing
 # f.fetchAvailableKeys(listing_urls)
