@@ -9,8 +9,7 @@ import unicodedata
 from osgeo import ogr, osr
 import psycopg2
 from datetime import datetime
-# normalise strings
-import unicodedata
+
 
 def RequestAndScrape(url) :
     r = requests.get(url)
@@ -67,7 +66,7 @@ def FetchAllListingsURL(url, location) :
 
 
 class Rent : 
-    def scrape_finn(conn, cur, location) : 
+    def scrape_finn(conn, cur, location, adress_parser) : 
         kind = 'rentlisting'
         # create dynamic tablename 
         current_date = datetime.now().strftime('%Y%m%d')
@@ -98,19 +97,20 @@ class Rent :
             # realEstateAgent 
             real_estate_agent_name, img = fetchRealEstateInfo(soup)
 
-            # location
             address = soup.find('span', {'data-testid':'object-address'}).text
+            # georeference address
+            osmaddress, geometry, epsg = geocodeAddresses(address, adress_parser) 
             current_day = datetime.today().strftime('%d-%m-%Y')
 
             try :
-                sql = f'insert into "{table_name}" (finn_id, title, date_upload, date_listing, typelisting, address, kommune, gardsnr, bruksnr, areal, bruttoareal, bruksareal, tomteareal, byggear, renovert_ar, overtakelse, tomt, etasje, energimerking, kontorplasser, parking, balkong_terasse, realestate_name, img, listing_url) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
-                cur.execute(sql, (finn_id, title, status_date, current_day, type_listing, address, kommune, gardsnr, bruksnr, areal, bruttoareal, bruksareal, tomteareal, byggear, renovert_ar, overtakelse, tomt, etasje, energimerking, kontorplasser, parking, balkong_terasse, real_estate_agent_name, img, listing_url))
+                sql = f'insert into "{table_name}" (finn_id, title, date_upload, date_listing, typelisting, address, osmaddress, kommune, gardsnr, bruksnr, areal, bruttoareal, bruksareal, tomteareal, byggear, renovert_ar, overtakelse, tomt, etasje, energimerking, kontorplasser, parking, balkong_terasse, realestate_name, img, listing_url, geom) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, ST_SetSRID(ST_GeomFromText(%s), %s))'
+                cur.execute(sql, (finn_id, title, status_date, current_day, type_listing, address, osmaddress, kommune, gardsnr, bruksnr, areal, bruttoareal, bruksareal, tomteareal, byggear, renovert_ar, overtakelse, tomt, etasje, energimerking, kontorplasser, parking, balkong_terasse, real_estate_agent_name, img, listing_url, geometry, epsg))
                 conn.commit()
                 print(f'data inserted for {title}')
             except Exception as e : 
                 print(e)
                 conn.rollback()
-            print('Finished scraping rental listings')
+        print('Finished scraping rental listings')
 
 
     # fetch section of key info. This informtion is located in 'data-testid' divs. 
@@ -157,7 +157,7 @@ class Rent :
                 
         return areal, etasje, overtakelse, bruttoareal, tomt, byggear, renovert_ar, bruksareal, tomteareal, kontorplasser, energimerking, balkong_terasse, parking
 class Sale :
-    def scrape_finn(conn, cur, location) :
+    def scrape_finn(conn, cur, location, adress_parser) :
         kind = 'salelisting'
         # create dynamic tablename 
         current_date = datetime.now().strftime('%Y%m%d')
@@ -203,11 +203,13 @@ class Sale :
             real_estate_agent_name, img = fetchRealEstateInfo(soup)
             
             address = soup.find('span', {'data-testid':'object-address'}).text
+            # georeference address
+            osmaddress, geometry, epsg = geocodeAddresses(address, adress_parser) 
             current_day = datetime.today().strftime('%d-%m-%Y')
             try :
-                sql = f'insert into "{table_name}" (finn_id, title, date_upload, date_listing, typelisting, address, kommune, gardsnr, bruksnr, price, totalpris, omkostninger, verditakst, kommunale_avg, formuesverdi, areal, bruttoareal, bruksareal, tomteareal, eieform, primaerrom, byggear, overtakelse, tomt, etasje, energimerking, realestate_name, img, listing_url) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
-                cur.execute(sql, (finn_id, title, current_day, status_date, type_listing, address, kommune, gardsnr, bruksnr, price, totalpris, omkostninger, verditakst, kommunale_avg, formuesverdi, areal, bruttoareal, bruksareal, tomteareal, eieform, primaerrom, byggear, overtakelse, tomt, etasje, energimerking, real_estate_agent_name, img, listing_url))
-                conn.commit()
+                sql = f'insert into "{table_name}" (finn_id, title, date_upload, date_listing, typelisting, address, osmaddress, kommune, gardsnr, bruksnr, price, totalpris, omkostninger, verditakst, kommunale_avg, formuesverdi, areal, bruttoareal, bruksareal, tomteareal, eieform, primaerrom, byggear, overtakelse, tomt, etasje, energimerking, realestate_name, img, listing_url, geom) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, ST_SetSRID(ST_GeomFromText(%s), %s))'
+                cur.execute(sql, (finn_id, title, current_day, status_date, type_listing, address, osmaddress, kommune, gardsnr, bruksnr, price, totalpris, omkostninger, verditakst, kommunale_avg, formuesverdi, areal, bruttoareal, bruksareal, tomteareal, eieform, primaerrom, byggear, overtakelse, tomt, etasje, energimerking, real_estate_agent_name, img, listing_url, geometry, epsg))
+                conn.commit() 
                 print(f'data inserted for {title}')
             except Exception as e : 
                 print(e)
@@ -354,13 +356,17 @@ def fetchMetadata(soup) :
 
 # geocode address
 def geocodeAddresses(address, address_parser) : 
-    address, osmaddress, geometry, epsg = [None] * 4
-    address = address_parser(address, with_prob=True).to_dict()
-    print(address)
-    if address.get('StreetNumber') is None : 
-        street = address['StreetName']
+    osmaddress, geometry, epsg = [None] * 3
+    address_parsed = address_parser(address, with_prob=True).to_dict()
+    if address_parsed.get('StreetNumber') is None : 
+        street = address_parsed['StreetName']
     else :
-        street = address['StreetName'] + ' ' + address['StreetNumber']
+        street = address_parsed['StreetName'] + ' ' + address_parsed['StreetNumber']
+
+    # Set up request headers
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+    }
 
     geocode_url = 'https://nominatim.openstreetmap.org/search?'
     params = dict (
@@ -368,9 +374,9 @@ def geocodeAddresses(address, address_parser) :
         polygon_geojson= '1',
         format = 'geojson',
         street = street,
-        postalcode = address['PostalCode'],
+        postalcode = address_parsed['PostalCode'],
     )
-    r = requests.get(geocode_url.encode('utf-8'), params=params)
+    r = requests.get(geocode_url.encode('utf-8'), params=params, headers=headers)
     if r.status_code == 200 :
         features = r.json()['features']
         # check if request returns features
@@ -383,12 +389,12 @@ def geocodeAddresses(address, address_parser) :
             # fetch projection, could be neccessary sometimes...
             source = geometry.GetSpatialReference() 
             epsg =   source.GetAttrValue('AUTHORITY', 1)
-            return address, osmaddress, geometry.ExportToWkt(), epsg
+            return osmaddress, geometry.ExportToWkt(), epsg
         else : 
             print('Request succesful, but no features fetched for request:')
             print(r.url) 
-            address, osmaddress, geometry, epsg = [None] * 4
-            return address, osmaddress, geometry, epsg
+            osmaddress, geometry, epsg = [None] * 3
+            return  osmaddress, geometry, epsg
     else : 
         print('The following request failed:')
         print(r.url)

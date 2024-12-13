@@ -9,6 +9,8 @@ from datetime import datetime
 # for loading environment variables
 import os
 from dotenv import load_dotenv
+# import adress parser
+from deepparse.parser import AddressParser
 
 load_dotenv()
 
@@ -22,6 +24,8 @@ db = os.getenv('PGDATABASE')
 conn = psycopg2.connect(f'host={host} dbname={db} user={user} password={pw}')
 cur = conn.cursor()
 
+# generate address parser object
+adress_parser = AddressParser()
 # Østfold  location
 location = '0.20002'
 
@@ -29,12 +33,12 @@ location = '0.20002'
 # f.fetchAvailableKeys(listing_urls)
 # f.Sale.fetchAvailablePricingKeys(listing_urls)
 
-# scraping sale listings
+# # scraping sale listings
 print('Scraping listings for sale... \n')
-f.Sale.scrape_finn(conn, cur, location )
+f.Sale.scrape_finn(conn, cur, location, adress_parser)
 # scraping rental listings
 print('Scraping rental listings... \n')
-f.Rent.scrape_finn(conn, cur, location)
+f.Rent.scrape_finn(conn, cur, location, adress_parser)
 
 conn.close()
 

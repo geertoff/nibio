@@ -6,6 +6,7 @@ create table if not exists salelisting (
     ,typelisting varchar
     -- address
     ,address varchar
+    ,osmaddress varchar
     -- cadastral information
     ,kommune varchar
     ,gardsnr varchar
@@ -33,4 +34,6 @@ create table if not exists salelisting (
     ,realestate_name varchar
     ,img varchar
     ,listing_url varchar
+    ,georeferenced boolean generated always as (geom is not null) stored
+    ,geom geometry
 );
