@@ -1,8 +1,6 @@
 # run sale and rent script
-echo "Scraping sale rentals..."
-python3 scrape-finn-sale.py
-echo "Scraping rental rentals..."
-python3 scrape-finn-rent.py
+echo "Running script"
+python3 main.py
 
 # export rent listing
 date=$(date +'%Y%m%d')
